@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:blink/core/providers.dart';
 import 'package:blink/services/notification_service.dart';
@@ -8,6 +9,7 @@ import 'package:blink/services/timer_service.dart';
 import 'package:blink/services/reminder_service.dart';
 import 'package:blink/services/idle_service.dart';
 import 'package:blink/services/schedule_service.dart';
+import 'package:blink/services/stats_service.dart';
 import 'package:blink/services/tray_service.dart';
 import 'package:blink/ui/home_screen.dart';
 import 'package:blink/ui/break_screen.dart';
@@ -16,6 +18,7 @@ late final TrayService trayService;
 late final TimerService timerService;
 late final NotificationService notificationService;
 late final ReminderService reminderService;
+late final StatsService statsService;
 late final IdleService idleService;
 late final ScheduleService scheduleService;
 
@@ -27,6 +30,11 @@ Future<void> main() async {
   final storageService = StorageService();
   await storageService.init();
   final settings = storageService.loadSettings();
+
+  // Initialize stats
+  final prefs = await SharedPreferences.getInstance();
+  statsService = StatsService();
+  await statsService.init(prefs);
 
   // Initialize window
   const windowOptions = WindowOptions(
@@ -79,6 +87,7 @@ Future<void> main() async {
 
   timerService.onBreakEnd = () {
     notificationService.showBreakEndNotification();
+    statsService.recordBreakTaken();
   };
 
   // Initialize reminder service
@@ -136,6 +145,7 @@ Future<void> main() async {
         reminderServiceProvider.overrideWithValue(reminderService),
         idleServiceProvider.overrideWithValue(idleService),
         scheduleServiceProvider.overrideWithValue(scheduleService),
+        statsServiceProvider.overrideWithValue(statsService),
       ],
       child: const BlinkApp(),
     ),

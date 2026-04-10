@@ -4,6 +4,7 @@ import 'package:blink/services/idle_service.dart';
 import 'package:blink/services/reminder_service.dart';
 import 'package:blink/services/schedule_service.dart';
 import 'package:blink/services/storage_service.dart';
+import 'package:blink/services/stats_service.dart';
 import 'package:blink/services/timer_service.dart';
 
 // Storage service provider
@@ -37,6 +38,11 @@ final scheduleServiceProvider = Provider<ScheduleService>((ref) {
   final service = ScheduleService();
   ref.onDispose(() => service.dispose());
   return service;
+});
+
+// Stats service provider
+final statsServiceProvider = Provider<StatsService>((ref) {
+  return StatsService();
 });
 
 // Timer status stream provider

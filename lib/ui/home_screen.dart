@@ -4,6 +4,7 @@ import 'package:blink/core/app_constants.dart';
 import 'package:blink/core/providers.dart';
 import 'package:blink/services/timer_service.dart';
 import 'package:blink/ui/settings_screen.dart';
+import 'package:blink/ui/stats_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -34,6 +35,16 @@ class HomeScreen extends ConsumerWidget {
                 const Spacer(),
                 _StatusChip(appStatus: appStatus),
                 const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.bar_chart),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const StatsScreen(),
+                      ),
+                    );
+                  },
+                ),
                 IconButton(
                   icon: const Icon(Icons.settings),
                   onPressed: () {
