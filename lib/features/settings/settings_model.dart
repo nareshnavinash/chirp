@@ -52,6 +52,50 @@ class SettingsModel {
     this.scheduleEndMinute = 0,
   });
 
+  Map<String, dynamic> toJson() => {
+    'workMinutes': workMinutes,
+    'breakSeconds': breakSeconds,
+    'longBreakMinutes': longBreakMinutes,
+    'longBreakInterval': longBreakInterval,
+    'breaksEnabled': breaksEnabled,
+    'maxPostponesPerDay': maxPostponesPerDay,
+    'blinkRemindersEnabled': blinkRemindersEnabled,
+    'blinkIntervalMinutes': blinkIntervalMinutes,
+    'postureRemindersEnabled': postureRemindersEnabled,
+    'postureIntervalMinutes': postureIntervalMinutes,
+    'autoStart': autoStart,
+    'startMinimized': startMinimized,
+    'idleThresholdMinutes': idleThresholdMinutes,
+    'scheduleEnabled': scheduleEnabled,
+    'activeDays': activeDays,
+    'scheduleStartHour': scheduleStartHour,
+    'scheduleStartMinute': scheduleStartMinute,
+    'scheduleEndHour': scheduleEndHour,
+    'scheduleEndMinute': scheduleEndMinute,
+  };
+
+  factory SettingsModel.fromJson(Map<String, dynamic> json) => SettingsModel(
+    workMinutes: json['workMinutes'] as int? ?? AppConstants.defaultWorkMinutes,
+    breakSeconds: json['breakSeconds'] as int? ?? AppConstants.defaultBreakSeconds,
+    longBreakMinutes: json['longBreakMinutes'] as int? ?? AppConstants.defaultLongBreakMinutes,
+    longBreakInterval: json['longBreakInterval'] as int? ?? AppConstants.defaultLongBreakInterval,
+    breaksEnabled: json['breaksEnabled'] as bool? ?? true,
+    maxPostponesPerDay: json['maxPostponesPerDay'] as int? ?? 5,
+    blinkRemindersEnabled: json['blinkRemindersEnabled'] as bool? ?? true,
+    blinkIntervalMinutes: json['blinkIntervalMinutes'] as int? ?? AppConstants.defaultBlinkReminderMinutes,
+    postureRemindersEnabled: json['postureRemindersEnabled'] as bool? ?? true,
+    postureIntervalMinutes: json['postureIntervalMinutes'] as int? ?? AppConstants.defaultPostureReminderMinutes,
+    autoStart: json['autoStart'] as bool? ?? false,
+    startMinimized: json['startMinimized'] as bool? ?? false,
+    idleThresholdMinutes: json['idleThresholdMinutes'] as int? ?? 3,
+    scheduleEnabled: json['scheduleEnabled'] as bool? ?? false,
+    activeDays: (json['activeDays'] as List<dynamic>?)?.cast<int>() ?? const [1, 2, 3, 4, 5],
+    scheduleStartHour: json['scheduleStartHour'] as int? ?? 9,
+    scheduleStartMinute: json['scheduleStartMinute'] as int? ?? 0,
+    scheduleEndHour: json['scheduleEndHour'] as int? ?? 17,
+    scheduleEndMinute: json['scheduleEndMinute'] as int? ?? 0,
+  );
+
   SettingsModel copyWith({
     int? workMinutes,
     int? breakSeconds,

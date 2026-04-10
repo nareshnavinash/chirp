@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:blink/core/app_constants.dart';
 import 'package:blink/core/providers.dart';
+import 'package:blink/services/sync_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -9,16 +11,18 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Settings'),
           bottom: const TabBar(
+            isScrollable: true,
             tabs: [
               Tab(text: 'General'),
               Tab(text: 'Breaks'),
               Tab(text: 'Reminders'),
               Tab(text: 'Schedule'),
+              Tab(text: 'Sync'),
             ],
           ),
         ),
@@ -28,6 +32,7 @@ class SettingsScreen extends ConsumerWidget {
             _BreaksTab(),
             _RemindersTab(),
             _ScheduleTab(),
+            _SyncTab(),
           ],
         ),
       ),
@@ -339,6 +344,240 @@ class _ScheduleTab extends ConsumerWidget {
         ),
       ],
     );
+  }
+}
+
+// ── Sync Tab ────────────────────────────────────────────────────
+
+class _SyncTab extends ConsumerStatefulWidget {
+  const _SyncTab();
+
+  @override
+  ConsumerState<_SyncTab> createState() => _SyncTabState();
+}
+
+class _SyncTabState extends ConsumerState<_SyncTab> {
+  final _serverUrlController = TextEditingController();
+  final _tokenController = TextEditingController();
+  String? _syncMessage;
+  bool _syncing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final syncService = ref.read(syncServiceProvider);
+    _serverUrlController.text = syncService.config.serverUrl ?? '';
+    _tokenController.text = syncService.config.authToken ?? '';
+  }
+
+  @override
+  void dispose() {
+    _serverUrlController.dispose();
+    _tokenController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveConfig() async {
+    final syncService = ref.read(syncServiceProvider);
+    await syncService.configure(SyncConfig(
+      serverUrl: _serverUrlController.text.trim().isEmpty
+          ? null
+          : _serverUrlController.text.trim(),
+      authToken: _tokenController.text.trim().isEmpty
+          ? null
+          : _tokenController.text.trim(),
+      enabled: true,
+      autoSync: true,
+    ));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sync config saved')),
+      );
+    }
+  }
+
+  Future<void> _pushSync() async {
+    setState(() { _syncing = true; _syncMessage = null; });
+    final syncService = ref.read(syncServiceProvider);
+    final settings = ref.read(settingsProvider);
+    final statsService = ref.read(statsServiceProvider);
+    final success = await syncService.pushToCloud(
+      settings: settings,
+      statsService: statsService,
+    );
+    if (mounted) {
+      setState(() {
+        _syncing = false;
+        _syncMessage = success ? 'Pushed to cloud' : 'Push failed: ${syncService.lastError}';
+      });
+    }
+  }
+
+  Future<void> _pullSync() async {
+    setState(() { _syncing = true; _syncMessage = null; });
+    final syncService = ref.read(syncServiceProvider);
+    final bundle = await syncService.pullFromCloud();
+    if (bundle != null && mounted) {
+      await ref.read(settingsProvider.notifier).update((_) => bundle.settings);
+      setState(() {
+        _syncing = false;
+        _syncMessage = 'Pulled settings from cloud (${bundle.deviceId})';
+      });
+    } else if (mounted) {
+      setState(() {
+        _syncing = false;
+        _syncMessage = 'Pull failed: ${syncService.lastError}';
+      });
+    }
+  }
+
+  Future<void> _exportJson() async {
+    final syncService = ref.read(syncServiceProvider);
+    final settings = ref.read(settingsProvider);
+    final statsService = ref.read(statsServiceProvider);
+    final json = syncService.exportToJson(
+      settings: settings,
+      statsService: statsService,
+    );
+    // Copy to clipboard as a simple export mechanism
+    await Clipboard.setData(ClipboardData(text: json));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Settings JSON copied to clipboard')),
+      );
+    }
+  }
+
+  Future<void> _importJson() async {
+    final clipData = await Clipboard.getData(Clipboard.kTextPlain);
+    if (clipData?.text == null || clipData!.text!.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Clipboard is empty')),
+        );
+      }
+      return;
+    }
+    final syncService = ref.read(syncServiceProvider);
+    final bundle = syncService.importFromJson(clipData.text!);
+    if (bundle != null && mounted) {
+      await ref.read(settingsProvider.notifier).update((_) => bundle.settings);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Imported settings from ${bundle.deviceId}')),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid JSON in clipboard')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final syncService = ref.watch(syncServiceProvider);
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _SectionHeader('Cloud Sync'),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _serverUrlController,
+          decoration: const InputDecoration(
+            labelText: 'Server URL',
+            hintText: 'https://your-sync-server.com',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _tokenController,
+          decoration: const InputDecoration(
+            labelText: 'Auth Token',
+            hintText: 'Your API token',
+            border: OutlineInputBorder(),
+          ),
+          obscureText: true,
+        ),
+        const SizedBox(height: 12),
+        FilledButton(
+          onPressed: _saveConfig,
+          child: const Text('Save Config'),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _syncing ? null : _pushSync,
+                icon: const Icon(Icons.cloud_upload),
+                label: const Text('Push'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _syncing ? null : _pullSync,
+                icon: const Icon(Icons.cloud_download),
+                label: const Text('Pull'),
+              ),
+            ),
+          ],
+        ),
+        if (syncService.lastSyncAt != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Last synced: ${_formatTime(syncService.lastSyncAt!)}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+        if (_syncMessage != null) ...[
+          const SizedBox(height: 8),
+          Text(_syncMessage!, style: Theme.of(context).textTheme.bodySmall),
+        ],
+        if (_syncing) ...[
+          const SizedBox(height: 8),
+          const LinearProgressIndicator(),
+        ],
+        const Divider(height: 32),
+        _SectionHeader('Offline Export / Import'),
+        const SizedBox(height: 8),
+        Text(
+          'Export settings and stats as JSON to clipboard, or import from clipboard.',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _exportJson,
+                icon: const Icon(Icons.file_upload),
+                label: const Text('Export'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _importJson,
+                icon: const Icon(Icons.file_download),
+                label: const Text('Import'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _formatTime(DateTime dt) {
+    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }
 

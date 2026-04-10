@@ -9,11 +9,19 @@ import 'package:blink/services/pomodoro_service.dart';
 import 'package:blink/services/smart_pause_service.dart';
 import 'package:blink/services/stats_service.dart';
 import 'package:blink/services/pairing_service.dart';
+import 'package:blink/services/sync_service.dart';
 import 'package:blink/services/timer_service.dart';
 
 // Pairing service provider
 final pairingServiceProvider = Provider<PairingService>((ref) {
   final service = PairingService(role: PairingRole.mobile);
+  ref.onDispose(() => service.dispose());
+  return service;
+});
+
+// Sync service provider
+final syncServiceProvider = Provider<SyncService>((ref) {
+  final service = SyncService();
   ref.onDispose(() => service.dispose());
   return service;
 });
