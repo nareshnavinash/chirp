@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:blink/core/app_constants.dart';
 import 'package:blink/core/providers.dart';
 import 'package:blink/services/timer_service.dart';
+import 'package:blink/ui/settings_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -32,6 +33,17 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const Spacer(),
                 _StatusChip(appStatus: appStatus),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const SettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 32),
