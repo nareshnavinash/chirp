@@ -49,7 +49,7 @@ pubspec.lock
 
 # Research artifacts (screenshots, network logs)
 *.png
-lookaway-network.txt
+*-network.txt
 
 # Playwright
 .playwright-mcp/
