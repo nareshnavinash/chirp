@@ -7,6 +7,7 @@ import 'package:blink/services/storage_service.dart';
 import 'package:blink/services/timer_service.dart';
 import 'package:blink/services/tray_service.dart';
 import 'package:blink/ui/home_screen.dart';
+import 'package:blink/ui/break_screen.dart';
 
 late final TrayService trayService;
 late final TimerService timerService;
@@ -103,6 +104,9 @@ class BlinkApp extends ConsumerStatefulWidget {
 }
 
 class _BlinkAppState extends ConsumerState<BlinkApp> with WindowListener {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  bool _isBreakScreenShowing = false;
+
   @override
   void initState() {
     super.initState();
@@ -129,11 +133,43 @@ class _BlinkAppState extends ConsumerState<BlinkApp> with WindowListener {
     await windowManager.hide();
   }
 
+  void _handleTimerStatus(TimerStatus status) {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    if (status.state == TimerState.onBreak && !_isBreakScreenShowing) {
+      _isBreakScreenShowing = true;
+      // Show window if hidden during break
+      windowManager.show();
+      windowManager.focus();
+      navigator.push(
+        PageRouteBuilder(
+          opaque: true,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const BreakScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+    } else if (status.state != TimerState.onBreak && _isBreakScreenShowing) {
+      _isBreakScreenShowing = false;
+      navigator.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Listen to timer status for break screen navigation
+    ref.listen<AsyncValue<TimerStatus>>(timerStatusProvider, (prev, next) {
+      next.whenData(_handleTimerStatus);
+    });
+
     return MaterialApp(
       title: 'Blink',
       debugShowCheckedModeBanner: false,
+      navigatorKey: _navigatorKey,
       theme: ThemeData(
         colorSchemeSeed: Colors.blue,
         useMaterial3: true,
