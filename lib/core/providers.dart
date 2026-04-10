@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:blink/features/settings/settings_model.dart';
+import 'package:blink/services/custom_reminder_service.dart';
 import 'package:blink/services/idle_service.dart';
 import 'package:blink/services/reminder_service.dart';
 import 'package:blink/services/schedule_service.dart';
@@ -40,6 +41,11 @@ final scheduleServiceProvider = Provider<ScheduleService>((ref) {
   final service = ScheduleService();
   ref.onDispose(() => service.dispose());
   return service;
+});
+
+// Custom reminder service provider
+final customReminderServiceProvider = Provider<CustomReminderService>((ref) {
+  return CustomReminderService();
 });
 
 // Smart pause service provider
