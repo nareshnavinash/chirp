@@ -1,0 +1,39 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+*.iml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+macos/Pods/
+macos/.symlinks/
+macos/Flutter/ephemeral/
+
+# Windows
+windows/flutter/ephemeral/
+
+# Linux
+linux/flutter/ephemeral/
+
+# Pub
+.pub-cache/
+.pub/
+pubspec.lock
+
+# Generated
+*.g.dart
+*.freezed.dart
+
+# Research artifacts (screenshots, network logs)
+*.png
+lookaway-network.txt
+
+# Playwright
+.playwright-mcp/
