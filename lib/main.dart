@@ -6,6 +6,8 @@ import 'package:blink/services/notification_service.dart';
 import 'package:blink/services/storage_service.dart';
 import 'package:blink/services/timer_service.dart';
 import 'package:blink/services/reminder_service.dart';
+import 'package:blink/services/idle_service.dart';
+import 'package:blink/services/schedule_service.dart';
 import 'package:blink/services/tray_service.dart';
 import 'package:blink/ui/home_screen.dart';
 import 'package:blink/ui/break_screen.dart';
@@ -14,6 +16,8 @@ late final TrayService trayService;
 late final TimerService timerService;
 late final NotificationService notificationService;
 late final ReminderService reminderService;
+late final IdleService idleService;
+late final ScheduleService scheduleService;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -86,6 +90,33 @@ Future<void> main() async {
     postureEnabled: settings.postureRemindersEnabled,
   );
 
+  // Initialize idle detection
+  idleService = IdleService();
+  idleService.configure(idleThresholdSeconds: 180);
+  idleService.onIdleChanged = (isIdle) {
+    if (isIdle) {
+      timerService.pause();
+      reminderService.stop();
+    } else {
+      timerService.resume();
+      reminderService.start();
+    }
+  };
+  await idleService.start();
+
+  // Initialize schedule service
+  scheduleService = ScheduleService();
+  scheduleService.onScheduleChanged = (isWithinSchedule) {
+    if (isWithinSchedule) {
+      timerService.resume();
+      reminderService.start();
+    } else {
+      timerService.pause();
+      reminderService.stop();
+    }
+  };
+  scheduleService.start();
+
   // Initialize system tray
   trayService = TrayService();
   await trayService.init();
@@ -103,6 +134,8 @@ Future<void> main() async {
         storageServiceProvider.overrideWithValue(storageService),
         timerServiceProvider.overrideWithValue(timerService),
         reminderServiceProvider.overrideWithValue(reminderService),
+        idleServiceProvider.overrideWithValue(idleService),
+        scheduleServiceProvider.overrideWithValue(scheduleService),
       ],
       child: const BlinkApp(),
     ),

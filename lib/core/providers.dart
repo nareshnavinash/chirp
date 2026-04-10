@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:blink/features/settings/settings_model.dart';
+import 'package:blink/services/idle_service.dart';
 import 'package:blink/services/reminder_service.dart';
+import 'package:blink/services/schedule_service.dart';
 import 'package:blink/services/storage_service.dart';
 import 'package:blink/services/timer_service.dart';
 
@@ -19,6 +21,20 @@ final timerServiceProvider = Provider<TimerService>((ref) {
 // Reminder service provider (singleton)
 final reminderServiceProvider = Provider<ReminderService>((ref) {
   final service = ReminderService();
+  ref.onDispose(() => service.dispose());
+  return service;
+});
+
+// Idle service provider
+final idleServiceProvider = Provider<IdleService>((ref) {
+  final service = IdleService();
+  ref.onDispose(() => service.dispose());
+  return service;
+});
+
+// Schedule service provider
+final scheduleServiceProvider = Provider<ScheduleService>((ref) {
+  final service = ScheduleService();
   ref.onDispose(() => service.dispose());
   return service;
 });
