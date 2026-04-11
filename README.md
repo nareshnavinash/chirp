@@ -14,9 +14,9 @@
 Chirp reminds you to take breaks, blink, and fix your posture using the **20-20-20 rule**: every 20 minutes, look at something 20 feet away for 20 seconds. Unlike other break reminder apps, Chirp works across all your devices, pauses itself when you're in meetings, and never phones home with your data.
 
 <div align="center">
-  <img src="website/images/screenshots/app_home.png" alt="Chirp home screen" width="320">
+  <img src="docs/images/screenshots/app_home.png" alt="Chirp home screen" width="320">
   &nbsp;&nbsp;&nbsp;
-  <img src="website/images/screenshots/app_break_overlay.png" alt="Chirp break overlay" width="320">
+  <img src="docs/images/screenshots/app_break_overlay.png" alt="Chirp break overlay" width="320">
 </div>
 
 ## Install
