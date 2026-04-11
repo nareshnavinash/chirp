@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:blink/core/providers.dart';
-import 'package:blink/services/timer_service.dart';
+import 'package:chirp/core/providers.dart';
+import 'package:chirp/services/timer_service.dart';
+import 'package:chirp/ui/theme/app_theme_extension.dart';
+import 'package:chirp/ui/widgets/break_keyboard_shortcuts.dart';
+import 'package:chirp/ui/widgets/breathing_progress_ring.dart';
 
 class BreakScreen extends ConsumerWidget {
   const BreakScreen({super.key});
@@ -9,19 +12,41 @@ class BreakScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final timerAsync = ref.watch(timerStatusProvider);
+    final colors = ChirpColors.of(context);
 
-    return Scaffold(
-      backgroundColor: Colors.black87,
-      body: Center(
-        child: timerAsync.when(
-          data: (status) => _BreakContent(status: status, ref: ref),
-          loading: () => const CircularProgressIndicator(color: Colors.white),
-          error: (e, st) => const Text(
-            'Something went wrong',
-            style: TextStyle(color: Colors.white),
+    return BreakKeyboardShortcuts(
+      child: Scaffold(
+        body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              colors.breakGradientStart,
+              colors.breakGradientEnd,
+            ],
           ),
         ),
-      ),
+        child: Center(
+          child: timerAsync.when(
+            data: (status) => _BreakContent(status: status, ref: ref),
+            loading: () => const CircularProgressIndicator(color: Colors.white),
+            error: (e, st) => Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, color: Colors.white38, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  'Break timer encountered an issue.\nIt will resume automatically.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white60, height: 1.5),
+                ),
+              ],
+            ),
+          ),
+         ),
+        ),
+       ),
     );
   }
 }
@@ -50,7 +75,7 @@ class _BreakContent extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Eye icon
+        // Break type icon
         Icon(
           status.nextBreakType == BreakType.long
               ? Icons.self_improvement
@@ -81,45 +106,24 @@ class _BreakContent extends StatelessWidget {
         ),
         const SizedBox(height: 48),
 
-        // Circular countdown
-        SizedBox(
-          width: 160,
-          height: 160,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: 160,
-                height: 160,
-                child: CircularProgressIndicator(
-                  value: status.progress,
-                  strokeWidth: 4,
-                  backgroundColor: Colors.white12,
-                  color: Colors.white70,
-                ),
-              ),
-              Text(
-                status.remainingFormatted,
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w200,
-                  fontFeatures: [const FontFeature.tabularFigures()],
-                ),
-              ),
-            ],
-          ),
+        // Breathing countdown ring
+        BreathingProgressRing(
+          progress: status.progress,
+          timeText: status.remainingFormatted,
         ),
         const SizedBox(height: 48),
 
-        // Skip button
-        TextButton(
+        // Skip button (improved contrast)
+        TextButton.icon(
           onPressed: () {
             ref.read(timerServiceProvider).skipBreak();
           },
           style: TextButton.styleFrom(
-            foregroundColor: Colors.white38,
+            foregroundColor: Colors.white60,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
-          child: const Text('Skip break'),
+          icon: const Icon(Icons.skip_next, size: 18),
+          label: const Text('Skip break (Esc)'),
         ),
       ],
     );

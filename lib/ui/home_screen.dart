@@ -1,32 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:blink/core/app_constants.dart';
-import 'package:blink/core/providers.dart';
-import 'package:blink/services/timer_service.dart';
-import 'package:blink/ui/settings_screen.dart';
-import 'package:blink/ui/pomodoro_screen.dart';
-import 'package:blink/ui/stats_screen.dart';
-import 'package:blink/ui/team_screen.dart';
+import 'package:chirp/core/app_constants.dart';
+import 'package:chirp/core/providers.dart';
+import 'package:chirp/services/timer_service.dart';
+import 'package:chirp/ui/settings_screen.dart';
+import 'package:chirp/ui/pomodoro_screen.dart';
+import 'package:chirp/ui/stats_screen.dart';
+import 'package:chirp/ui/team_screen.dart';
+import 'package:chirp/ui/theme/app_theme_extension.dart';
+import 'package:chirp/ui/widgets/circular_timer.dart';
+import 'package:chirp/ui/widgets/keyboard_shortcuts.dart';
+import 'package:chirp/ui/widgets/quick_settings_row.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
+  Color _progressColor(BuildContext context, TimerStatus status) {
+    final colors = ChirpColors.of(context);
+    switch (status.state) {
+      case TimerState.onBreak:
+        return colors.success;
+      case TimerState.preBreak:
+        return colors.warning;
+      default:
+        return colors.brand;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
     final appStatus = ref.watch(appStatusProvider);
     final timerAsync = ref.watch(timerStatusProvider);
 
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return KeyboardShortcutWrapper(
+      child: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
           children: [
             // Header
             Row(
               children: [
-                const Icon(Icons.remove_red_eye, size: 32, color: Colors.blue),
+                Icon(Icons.remove_red_eye, size: 32, color: ChirpColors.of(context).brand),
                 const SizedBox(width: 12),
                 Text(
                   AppConstants.appName,
@@ -50,6 +65,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.bar_chart),
+                  tooltip: 'Stats',
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -71,6 +87,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.settings),
+                  tooltip: 'Settings',
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -81,20 +98,58 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
 
-            // Timer card
-            _TimerCard(timerAsync: timerAsync, appStatus: appStatus, ref: ref),
+            // Circular timer (centered focal point)
+            timerAsync.when(
+              data: (status) => CircularTimer(
+                progress: status.progress,
+                timeText: status.remainingFormatted,
+                label: status.stateLabel,
+                progressColor: _progressColor(context, status),
+              ),
+              loading: () => const CircularTimer(
+                progress: 0,
+                timeText: '--:--',
+                label: 'Starting...',
+              ),
+              error: (e, st) => Column(
+                children: [
+                  Icon(Icons.error_outline, color: ChirpColors.of(context).warning, size: 32),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Timer is restarting...',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: ChirpColors.of(context).textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => ref.read(timerServiceProvider).startWorkSession(),
+                    child: const Text('Restart now'),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
 
-            // Snooze bar (shown during preBreak)
+            // Action buttons (centered)
+            _ActionButtons(timerAsync: timerAsync, appStatus: appStatus, ref: ref),
+            const SizedBox(height: 12),
+
+            // Snooze bar (animated in/out during preBreak)
             timerAsync.when(
-              data: (status) {
-                if (status.state == TimerState.preBreak) {
-                  return _SnoozeBar(status: status, ref: ref);
-                }
-                return const SizedBox.shrink();
-              },
+              data: (status) => AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) => SizeTransition(
+                  sizeFactor: animation,
+                  axisAlignment: -1,
+                  child: FadeTransition(opacity: animation, child: child),
+                ),
+                child: status.state == TimerState.preBreak
+                    ? _SnoozeBar(key: const ValueKey('snooze'), status: status, ref: ref)
+                    : const SizedBox.shrink(key: ValueKey('empty')),
+              ),
               loading: () => const SizedBox.shrink(),
               error: (e, st) => const SizedBox.shrink(),
             ),
@@ -105,55 +160,28 @@ class HomeScreen extends ConsumerWidget {
               loading: () => const SizedBox.shrink(),
               error: (e, st) => const SizedBox.shrink(),
             ),
-            const SizedBox(height: 16),
 
-            // Quick settings
-            Text(
-              'Quick Settings',
-              style: Theme.of(context).textTheme.titleMedium,
+            const Spacer(),
+
+            // Keyboard shortcut hints
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'Space to ${appStatus == AppStatus.running ? "pause" : "resume"} · B for break · S to skip',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: ChirpColors.of(context).textTertiary,
+                  fontSize: 11,
+                ),
+              ),
             ),
             const SizedBox(height: 12),
-            _SettingsTile(
-              title: 'Break Reminders',
-              subtitle:
-                  'Every ${settings.workMinutes} min, ${settings.breakSeconds}s break',
-              value: settings.breaksEnabled,
-              onChanged: (value) {
-                ref.read(settingsProvider.notifier).update(
-                  (s) => s.copyWith(breaksEnabled: value),
-                );
-                if (value) {
-                  ref.read(timerServiceProvider).startWorkSession();
-                } else {
-                  ref.read(timerServiceProvider).pause();
-                }
-              },
-            ),
-            _SettingsTile(
-              title: 'Blink Reminders',
-              subtitle: 'Gentle reminder to blink',
-              value: settings.blinkRemindersEnabled,
-              onChanged: (value) {
-                ref.read(settingsProvider.notifier).update(
-                  (s) => s.copyWith(blinkRemindersEnabled: value),
-                );
-                ref.read(reminderServiceProvider).updateBlinkEnabled(value);
-              },
-            ),
-            _SettingsTile(
-              title: 'Posture Reminders',
-              subtitle: 'Check your posture periodically',
-              value: settings.postureRemindersEnabled,
-              onChanged: (value) {
-                ref.read(settingsProvider.notifier).update(
-                  (s) => s.copyWith(postureRemindersEnabled: value),
-                );
-                ref.read(reminderServiceProvider).updatePostureEnabled(value);
-              },
-            ),
+
+            // Compact quick settings chips
+            const QuickSettingsRow(),
           ],
+         ),
         ),
-      ),
+       ),
     );
   }
 }
@@ -171,70 +199,8 @@ class _StatusChip extends StatelessWidget {
       ),
       backgroundColor:
           appStatus == AppStatus.running
-              ? Colors.green.shade100
-              : Colors.orange.shade100,
-    );
-  }
-}
-
-class _TimerCard extends StatelessWidget {
-  final AsyncValue<TimerStatus> timerAsync;
-  final AppStatus appStatus;
-  final WidgetRef ref;
-
-  const _TimerCard({
-    required this.timerAsync,
-    required this.appStatus,
-    required this.ref,
-  });
-
-  Color _progressColor(TimerStatus status) {
-    switch (status.state) {
-      case TimerState.onBreak:
-        return Colors.green;
-      case TimerState.preBreak:
-        return Colors.orange;
-      default:
-        return Colors.blue;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            timerAsync.when(
-              data: (status) => _TimerDisplay(status: status),
-              loading: () => const _TimerDisplayLoading(),
-              error: (e, st) => const Text('Timer error'),
-            ),
-            const SizedBox(height: 16),
-
-            // Progress bar
-            timerAsync.when(
-              data: (status) => ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: status.progress,
-                  minHeight: 6,
-                  backgroundColor: Colors.grey.shade200,
-                  color: _progressColor(status),
-                ),
-              ),
-              loading: () => const LinearProgressIndicator(value: 0),
-              error: (e, st) => const SizedBox.shrink(),
-            ),
-            const SizedBox(height: 16),
-
-            // Action buttons
-            _ActionButtons(timerAsync: timerAsync, appStatus: appStatus, ref: ref),
-          ],
-        ),
-      ),
+              ? ChirpColors.of(context).successLight
+              : ChirpColors.of(context).warningLight,
     );
   }
 }
@@ -253,6 +219,7 @@ class _ActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         FilledButton.icon(
           onPressed: () {
@@ -306,57 +273,60 @@ class _SnoozeBar extends StatelessWidget {
   final TimerStatus status;
   final WidgetRef ref;
 
-  const _SnoozeBar({required this.status, required this.ref});
+  const _SnoozeBar({super.key, required this.status, required this.ref});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.orange.shade50,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.snooze, size: 18, color: Colors.orange.shade700),
-                const SizedBox(width: 8),
-                Text(
-                  status.canPostpone
-                      ? 'Postpone? (${status.postponesRemaining} left today)'
-                      : 'No postpones remaining',
-                  style: TextStyle(
-                    color: Colors.orange.shade700,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            if (status.canPostpone) ...[
-              const SizedBox(height: 8),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Card(
+        color: ChirpColors.of(context).warningLight,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(
                 children: [
-                  _SnoozeButton(
-                    label: '+1 min',
-                    onPressed: () =>
-                        ref.read(timerServiceProvider).postpone(1),
-                  ),
+                  Icon(Icons.snooze, size: 18, color: ChirpColors.of(context).warningDark),
                   const SizedBox(width: 8),
-                  _SnoozeButton(
-                    label: '+5 min',
-                    onPressed: () =>
-                        ref.read(timerServiceProvider).postpone(5),
-                  ),
-                  const SizedBox(width: 8),
-                  _SnoozeButton(
-                    label: '+15 min',
-                    onPressed: () =>
-                        ref.read(timerServiceProvider).postpone(15),
+                  Text(
+                    status.canPostpone
+                        ? 'Postpone? (${status.postponesRemaining} left today)'
+                        : 'No postpones remaining',
+                    style: TextStyle(
+                      color: ChirpColors.of(context).warningDark,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
+              if (status.canPostpone) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _SnoozeButton(
+                      label: '+1 min',
+                      onPressed: () =>
+                          ref.read(timerServiceProvider).postpone(1),
+                    ),
+                    const SizedBox(width: 8),
+                    _SnoozeButton(
+                      label: '+5 min',
+                      onPressed: () =>
+                          ref.read(timerServiceProvider).postpone(5),
+                    ),
+                    const SizedBox(width: 8),
+                    _SnoozeButton(
+                      label: '+15 min',
+                      onPressed: () =>
+                          ref.read(timerServiceProvider).postpone(15),
+                    ),
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -374,79 +344,12 @@ class _SnoozeButton extends StatelessWidget {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.orange.shade700,
-        side: BorderSide(color: Colors.orange.shade300),
+        foregroundColor: ChirpColors.of(context).warningDark,
+        side: BorderSide(color: ChirpColors.of(context).warningMedium),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         minimumSize: Size.zero,
       ),
       child: Text(label),
-    );
-  }
-}
-
-class _TimerDisplay extends StatelessWidget {
-  final TimerStatus status;
-
-  const _TimerDisplay({required this.status});
-
-  Color? _textColor() {
-    switch (status.state) {
-      case TimerState.onBreak:
-        return Colors.green[700];
-      case TimerState.preBreak:
-        return Colors.orange[700];
-      default:
-        return null;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          status.stateLabel,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: _textColor() ?? Colors.grey[600],
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          status.remainingFormatted,
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-            fontWeight: FontWeight.w300,
-            fontFeatures: [const FontFeature.tabularFigures()],
-            color: _textColor(),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _TimerDisplayLoading extends StatelessWidget {
-  const _TimerDisplayLoading();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Starting...',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Colors.grey[600],
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '--:--',
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-            fontWeight: FontWeight.w300,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -458,43 +361,22 @@ class _BreakInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(Icons.info_outline, size: 16, color: Colors.grey[500]),
-        const SizedBox(width: 8),
-        Text(
-          'Break ${status.breaksTakenInCycle + 1} of cycle  |  '
-          'Next: ${status.nextBreakType == BreakType.long ? 'Long break' : 'Short break'}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[500],
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.info_outline, size: 16, color: ChirpColors.of(context).textTertiary),
+          const SizedBox(width: 8),
+          Text(
+            'Break ${status.breaksTakenInCycle + 1} of cycle  |  '
+            'Next: ${status.nextBreakType == BreakType.long ? 'Long break' : 'Short break'}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: ChirpColors.of(context).textTertiary,
+            ),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SettingsTile extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _SettingsTile({
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SwitchListTile(
-      title: Text(title),
-      subtitle: Text(subtitle),
-      value: value,
-      onChanged: onChanged,
-      contentPadding: EdgeInsets.zero,
+        ],
+      ),
     );
   }
 }

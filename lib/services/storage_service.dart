@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:blink/core/app_constants.dart';
-import 'package:blink/features/settings/settings_model.dart';
+import 'package:chirp/core/app_constants.dart';
+import 'package:chirp/features/settings/settings_model.dart';
 
 class StorageService {
   late final SharedPreferences _prefs;

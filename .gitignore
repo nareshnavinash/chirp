@@ -48,7 +48,6 @@ pubspec.lock
 *.freezed.dart
 
 # Research artifacts (screenshots, network logs)
-*.png
 *-network.txt
 
 # Playwright

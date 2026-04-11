@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appName = 'Blink';
+  static const String appName = 'Chirp';
   static const String appVersion = '0.1.0';
 
   // Default break settings

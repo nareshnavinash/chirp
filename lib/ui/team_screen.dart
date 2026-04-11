@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:blink/core/providers.dart';
-import 'package:blink/services/team_service.dart';
+import 'package:chirp/core/providers.dart';
+import 'package:chirp/services/team_service.dart';
+import 'package:chirp/ui/theme/app_theme_extension.dart';
 
 class TeamScreen extends ConsumerStatefulWidget {
   const TeamScreen({super.key});
@@ -15,7 +16,8 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
   final _tokenController = TextEditingController();
   final _codeController = TextEditingController();
   bool _loading = false;
-  TeamLicense? _license;
+  // Hidden: license UI not needed for free app
+  // TeamLicense? _license;
   List<TeamMember> _members = [];
   TeamStats? _stats;
 
@@ -39,15 +41,17 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
 
     setState(() => _loading = true);
     final results = await Future.wait([
-      team.getLicense(),
+      // Hidden: license fetch not needed for free app
+      // team.getLicense(),
       team.getMembers(),
       team.getTeamStats(),
     ]);
     if (mounted) {
       setState(() {
-        _license = results[0] as TeamLicense?;
-        _members = results[1] as List<TeamMember>;
-        _stats = results[2] as TeamStats?;
+        // Hidden: license UI not needed for free app
+        // _license = results[0] as TeamLicense?;
+        _members = results[0] as List<TeamMember>;
+        _stats = results[1] as TeamStats?;
         _loading = false;
       });
     }
@@ -123,7 +127,7 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
           const SizedBox(height: 8),
           Text(
             'Enter your team server details and invite code to join.',
-            style: TextStyle(color: Colors.grey[600]),
+            style: TextStyle(color: ChirpColors.of(context).textSecondary),
           ),
           const SizedBox(height: 24),
           TextField(
@@ -175,9 +179,9 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // License info
-          if (_license != null) _LicenseCard(license: _license!),
-          const SizedBox(height: 16),
+          // Hidden: license UI not needed for free app
+          // if (_license != null) _LicenseCard(license: _license!),
+          // const SizedBox(height: 16),
 
           // Team stats
           if (_stats != null) _TeamStatsCard(stats: _stats!),
@@ -203,8 +207,8 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
           const Divider(height: 32),
           TextButton.icon(
             onPressed: _leaveTeam,
-            icon: const Icon(Icons.exit_to_app, color: Colors.red),
-            label: const Text('Leave Team', style: TextStyle(color: Colors.red)),
+            icon: Icon(Icons.exit_to_app, color: ChirpColors.of(context).error),
+            label: Text('Leave Team', style: TextStyle(color: ChirpColors.of(context).error)),
           ),
         ],
       ),
@@ -212,6 +216,7 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
   }
 }
 
+// Hidden: license UI not needed for free app — class retained but unused.
 class _LicenseCard extends StatelessWidget {
   final TeamLicense license;
 
@@ -227,7 +232,7 @@ class _LicenseCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.business, color: Colors.blue),
+                Icon(Icons.business, color: ChirpColors.of(context).brand),
                 const SizedBox(width: 8),
                 Text(license.teamName,
                     style: Theme.of(context).textTheme.titleMedium),
@@ -235,8 +240,8 @@ class _LicenseCard extends StatelessWidget {
                 Chip(
                   label: Text(license.isValid ? 'Active' : 'Expired'),
                   backgroundColor: license.isValid
-                      ? Colors.green.shade100
-                      : Colors.red.shade100,
+                      ? ChirpColors.of(context).successLight
+                      : ChirpColors.of(context).errorLight,
                 ),
               ],
             ),
@@ -251,7 +256,7 @@ class _LicenseCard extends StatelessWidget {
               value: license.totalSeats > 0
                   ? license.usedSeats / license.totalSeats
                   : 0,
-              backgroundColor: Colors.grey.shade200,
+              backgroundColor: ChirpColors.of(context).surfaceSubtle,
             ),
           ],
         ),
@@ -322,13 +327,13 @@ class _MiniStat extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, size: 20, color: Colors.blue),
+          Icon(icon, size: 20, color: ChirpColors.of(context).brand),
           const SizedBox(height: 4),
           Text(value, style: Theme.of(context).textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.bold,
           )),
           Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
+            color: ChirpColors.of(context).textSecondary,
             fontSize: 10,
           )),
         ],
@@ -349,11 +354,11 @@ class _MemberTile extends StatelessWidget {
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: isOnline ? Colors.green.shade100 : Colors.grey.shade200,
+        backgroundColor: isOnline ? ChirpColors.of(context).successLight : ChirpColors.of(context).surfaceSubtle,
         child: Text(
           member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
           style: TextStyle(
-            color: isOnline ? Colors.green.shade700 : Colors.grey,
+            color: isOnline ? ChirpColors.of(context).successMedium : ChirpColors.of(context).textTertiary,
           ),
         ),
       ),
@@ -365,11 +370,11 @@ class _MemberTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
               decoration: BoxDecoration(
-                color: Colors.blue.shade100,
+                color: ChirpColors.of(context).brandSubtle,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text('Admin',
-                  style: TextStyle(fontSize: 10, color: Colors.blue.shade700)),
+                  style: TextStyle(fontSize: 10, color: ChirpColors.of(context).brand)),
             ),
           ],
         ],
@@ -384,10 +389,10 @@ class _MemberTile extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: member.healthScore! >= 80
-                        ? Colors.green
+                        ? ChirpColors.of(context).success
                         : member.healthScore! >= 60
-                            ? Colors.orange
-                            : Colors.red,
+                            ? ChirpColors.of(context).warning
+                            : ChirpColors.of(context).error,
                   ),
                 ),
                 Text('score', style: Theme.of(context).textTheme.bodySmall),

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:blink/features/settings/settings_model.dart';
+import 'package:chirp/features/settings/settings_model.dart';
 
 class TeamMember {
   final String id;

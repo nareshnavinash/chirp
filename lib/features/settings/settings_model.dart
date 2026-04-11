@@ -1,4 +1,4 @@
-import 'package:blink/core/app_constants.dart';
+import 'package:chirp/core/app_constants.dart';
 
 class SettingsModel {
   // Break settings

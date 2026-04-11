@@ -118,7 +118,7 @@ class AutomationService {
     try {
       final payload = jsonEncode({
         'event': event.name,
-        'app': 'Blink',
+        'app': 'Chirp',
         'timestamp': DateTime.now().toIso8601String(),
       });
 

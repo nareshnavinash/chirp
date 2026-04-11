@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.blinkapp" "\0"
-            VALUE "FileDescription", "blink_app" "\0"
+            VALUE "CompanyName", "com.chirpapp" "\0"
+            VALUE "FileDescription", "chirp_app" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "blink_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.blinkapp. All rights reserved." "\0"
-            VALUE "OriginalFilename", "blink_app.exe" "\0"
-            VALUE "ProductName", "blink_app" "\0"
+            VALUE "InternalName", "chirp_app" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.chirpapp. All rights reserved." "\0"
+            VALUE "OriginalFilename", "chirp_app.exe" "\0"
+            VALUE "ProductName", "chirp_app" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

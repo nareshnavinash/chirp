@@ -5,20 +5,20 @@ VERSION="${1:-0.1.0}"
 BUILD_DIR="build/releases"
 mkdir -p "$BUILD_DIR"
 
-echo "=== Building Blink v${VERSION} ==="
+echo "=== Building Chirp v${VERSION} ==="
 
 # macOS
 build_macos() {
   echo "--- Building macOS ---"
   flutter build macos --release
 
-  APP_PATH="build/macos/Build/Products/Release/blink_app.app"
-  DMG_PATH="${BUILD_DIR}/Blink-${VERSION}-macos.dmg"
+  APP_PATH="build/macos/Build/Products/Release/chirp_app.app"
+  DMG_PATH="${BUILD_DIR}/Chirp-${VERSION}-macos.dmg"
 
   # Create DMG
   if command -v create-dmg &> /dev/null; then
     create-dmg \
-      --volname "Blink" \
+      --volname "Chirp" \
       --window-pos 200 120 \
       --window-size 600 400 \
       --icon-size 100 \
@@ -27,7 +27,7 @@ build_macos() {
       "$APP_PATH"
   else
     # Fallback: simple hdiutil
-    hdiutil create -volname "Blink" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
+    hdiutil create -volname "Chirp" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
   fi
 
   echo "macOS DMG: $DMG_PATH"
@@ -39,7 +39,7 @@ build_windows() {
   flutter build windows --release
 
   WINDOWS_DIR="build/windows/x64/runner/Release"
-  ZIP_PATH="${BUILD_DIR}/Blink-${VERSION}-windows.zip"
+  ZIP_PATH="${BUILD_DIR}/Chirp-${VERSION}-windows.zip"
 
   # Zip the release folder
   cd "$WINDOWS_DIR"
@@ -57,7 +57,7 @@ build_linux() {
   LINUX_DIR="build/linux/x64/release/bundle"
 
   # Create AppImage structure
-  APPDIR="${BUILD_DIR}/Blink.AppDir"
+  APPDIR="${BUILD_DIR}/Chirp.AppDir"
   mkdir -p "${APPDIR}/usr/bin" "${APPDIR}/usr/share/icons"
   cp -r "${LINUX_DIR}/." "${APPDIR}/usr/bin/"
 
@@ -66,23 +66,23 @@ build_linux() {
 #!/bin/bash
 SELF=$(readlink -f "$0")
 HERE=${SELF%/*}
-exec "${HERE}/usr/bin/blink" "$@"
+exec "${HERE}/usr/bin/chirp" "$@"
 APPRUN
   chmod +x "${APPDIR}/AppRun"
 
   # Desktop file
-  cat > "${APPDIR}/blink.desktop" << 'DESKTOP'
+  cat > "${APPDIR}/chirp.desktop" << 'DESKTOP'
 [Desktop Entry]
-Name=Blink
-Exec=blink
-Icon=blink
+Name=Chirp
+Exec=chirp
+Icon=chirp
 Type=Application
 Categories=Utility;
 Comment=Smart break reminders for healthy screen habits
 DESKTOP
 
   # Create tarball (AppImage tool needed for actual .AppImage)
-  TAR_PATH="${BUILD_DIR}/Blink-${VERSION}-linux.tar.gz"
+  TAR_PATH="${BUILD_DIR}/Chirp-${VERSION}-linux.tar.gz"
   tar -czf "$TAR_PATH" -C "$LINUX_DIR" .
 
   echo "Linux tarball: $TAR_PATH"

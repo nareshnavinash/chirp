@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:blink/features/settings/settings_model.dart';
-import 'package:blink/services/stats_service.dart';
+import 'package:chirp/features/settings/settings_model.dart';
+import 'package:chirp/services/stats_service.dart';
 
 enum SyncStatus { idle, syncing, success, error }
 

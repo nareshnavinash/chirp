@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:blink/core/app_constants.dart';
-import 'package:blink/core/providers.dart';
-import 'package:blink/services/sync_service.dart';
+import 'package:chirp/core/app_constants.dart';
+import 'package:chirp/core/providers.dart';
+import 'package:chirp/services/sync_service.dart';
+import 'package:chirp/ui/theme/app_theme_extension.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -18,11 +19,11 @@ class SettingsScreen extends ConsumerWidget {
           bottom: const TabBar(
             isScrollable: true,
             tabs: [
-              Tab(text: 'General'),
-              Tab(text: 'Breaks'),
-              Tab(text: 'Reminders'),
-              Tab(text: 'Schedule'),
-              Tab(text: 'Sync'),
+              Tab(icon: Icon(Icons.tune, size: 18), text: 'General'),
+              Tab(icon: Icon(Icons.free_breakfast, size: 18), text: 'Breaks'),
+              Tab(icon: Icon(Icons.notifications_outlined, size: 18), text: 'Reminders'),
+              Tab(icon: Icon(Icons.schedule, size: 18), text: 'Schedule'),
+              Tab(icon: Icon(Icons.sync, size: 18), text: 'Sync'),
             ],
           ),
         ),
@@ -55,7 +56,7 @@ class _GeneralTab extends ConsumerWidget {
         _SectionHeader('Startup'),
         SwitchListTile(
           title: const Text('Launch at startup'),
-          subtitle: const Text('Start Blink when you log in'),
+          subtitle: const Text('Start Chirp when you log in'),
           value: settings.autoStart,
           onChanged: (v) => ref.read(settingsProvider.notifier).update(
             (s) => s.copyWith(autoStart: v),
@@ -530,7 +531,7 @@ class _SyncTabState extends ConsumerState<_SyncTab> {
           Text(
             'Last synced: ${_formatTime(syncService.lastSyncAt!)}',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey[600],
+              color: ChirpColors.of(context).textSecondary,
             ),
           ),
         ],
@@ -548,7 +549,7 @@ class _SyncTabState extends ConsumerState<_SyncTab> {
         Text(
           'Export settings and stats as JSON to clipboard, or import from clipboard.',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
+            color: ChirpColors.of(context).textSecondary,
           ),
         ),
         const SizedBox(height: 12),
@@ -633,14 +634,20 @@ class _SliderTile extends StatelessWidget {
         label: format(value),
         onChanged: onChanged,
       ),
-      trailing: SizedBox(
-        width: 60,
+      trailing: Container(
+        width: 64,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: ChirpColors.of(context).surfaceSubtle,
+          borderRadius: BorderRadius.circular(6),
+        ),
         child: Text(
           format(value),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            fontFeatures: [const FontFeature.tabularFigures()],
           ),
-          textAlign: TextAlign.end,
+          textAlign: TextAlign.center,
         ),
       ),
     );

@@ -1,17 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:blink/features/settings/settings_model.dart';
-import 'package:blink/services/custom_reminder_service.dart';
-import 'package:blink/services/idle_service.dart';
-import 'package:blink/services/reminder_service.dart';
-import 'package:blink/services/schedule_service.dart';
-import 'package:blink/services/storage_service.dart';
-import 'package:blink/services/pomodoro_service.dart';
-import 'package:blink/services/smart_pause_service.dart';
-import 'package:blink/services/stats_service.dart';
-import 'package:blink/services/pairing_service.dart';
-import 'package:blink/services/sync_service.dart';
-import 'package:blink/services/team_service.dart';
-import 'package:blink/services/timer_service.dart';
+import 'package:chirp/features/settings/settings_model.dart';
+import 'package:chirp/services/custom_reminder_service.dart';
+import 'package:chirp/services/idle_service.dart';
+import 'package:chirp/services/reminder_service.dart';
+import 'package:chirp/services/schedule_service.dart';
+import 'package:chirp/services/storage_service.dart';
+import 'package:chirp/services/pomodoro_service.dart';
+import 'package:chirp/services/smart_pause_service.dart';
+import 'package:chirp/services/stats_service.dart';
+import 'package:chirp/services/pairing_service.dart';
+import 'package:chirp/services/sync_service.dart';
+import 'package:chirp/services/team_service.dart';
+import 'package:chirp/services/timer_service.dart';
 
 // Pairing service provider
 final pairingServiceProvider = Provider<PairingService>((ref) {

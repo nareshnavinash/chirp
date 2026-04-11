@@ -17,14 +17,14 @@ jobs:
       - run: flutter build macos --release
       - name: Create DMG
         run: |
-          hdiutil create -volname "Blink" \
-            -srcfolder build/macos/Build/Products/Release/blink_app.app \
+          hdiutil create -volname "Chirp" \
+            -srcfolder build/macos/Build/Products/Release/chirp_app.app \
             -ov -format UDZO \
-            Blink-${{ github.ref_name }}-macos.dmg
+            Chirp-${{ github.ref_name }}-macos.dmg
       - uses: actions/upload-artifact@v4
         with:
           name: macos-dmg
-          path: Blink-*.dmg
+          path: Chirp-*.dmg
 
   build-linux:
     runs-on: ubuntu-latest
@@ -41,11 +41,11 @@ jobs:
       - name: Create tarball
         run: |
           cd build/linux/x64/release/bundle
-          tar -czf ../../../../../Blink-${{ github.ref_name }}-linux.tar.gz .
+          tar -czf ../../../../../Chirp-${{ github.ref_name }}-linux.tar.gz .
       - uses: actions/upload-artifact@v4
         with:
           name: linux-tarball
-          path: Blink-*.tar.gz
+          path: Chirp-*.tar.gz
 
   build-windows:
     runs-on: windows-latest
@@ -58,11 +58,11 @@ jobs:
       - run: flutter build windows --release
       - name: Create ZIP
         run: |
-          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath Blink-${{ github.ref_name }}-windows.zip
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath Chirp-${{ github.ref_name }}-windows.zip
       - uses: actions/upload-artifact@v4
         with:
           name: windows-zip
-          path: Blink-*.zip
+          path: Chirp-*.zip
 
   create-release:
     needs: [build-macos, build-linux, build-windows]

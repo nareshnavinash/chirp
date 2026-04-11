@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:blink/core/providers.dart';
-import 'package:blink/services/pomodoro_service.dart';
+import 'package:chirp/core/providers.dart';
+import 'package:chirp/services/pomodoro_service.dart';
+import 'package:chirp/ui/theme/app_theme_extension.dart';
 
 class PomodoroScreen extends ConsumerWidget {
   const PomodoroScreen({super.key});
@@ -37,7 +38,7 @@ class _PomodoroIdle extends StatelessWidget {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.timer, size: 64, color: Colors.grey[400]),
+          Icon(Icons.timer, size: 64, color: ChirpColors.of(context).textTertiary),
           const SizedBox(height: 16),
           Text(
             'Ready to focus?',
@@ -47,7 +48,7 @@ class _PomodoroIdle extends StatelessWidget {
           Text(
             '25 min work / 5 min break / 4 cycles',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
+              color: ChirpColors.of(context).textSecondary,
             ),
           ),
           const SizedBox(height: 32),
@@ -70,18 +71,19 @@ class _PomodoroContent extends StatelessWidget {
 
   const _PomodoroContent({required this.status, required this.ref});
 
-  Color get _stateColor {
+  Color _stateColor(BuildContext context) {
+    final colors = ChirpColors.of(context);
     switch (status.state) {
       case PomodoroState.work:
-        return Colors.red;
+        return colors.error;
       case PomodoroState.shortBreak:
-        return Colors.green;
+        return colors.success;
       case PomodoroState.longBreak:
-        return Colors.blue;
+        return colors.brand;
       case PomodoroState.paused:
-        return Colors.orange;
+        return colors.warning;
       case PomodoroState.idle:
-        return Colors.grey;
+        return colors.textTertiary;
     }
   }
 
@@ -94,7 +96,7 @@ class _PomodoroContent extends StatelessWidget {
         Text(
           status.stateLabel,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: _stateColor,
+            color: _stateColor(context),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -113,8 +115,8 @@ class _PomodoroContent extends StatelessWidget {
                 child: CircularProgressIndicator(
                   value: status.progress,
                   strokeWidth: 8,
-                  backgroundColor: Colors.grey.shade200,
-                  color: _stateColor,
+                  backgroundColor: ChirpColors.of(context).surfaceSubtle,
+                  color: _stateColor(context),
                 ),
               ),
               Column(
@@ -152,12 +154,12 @@ class _PomodoroContent extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isComplete
-                      ? _stateColor
+                      ? _stateColor(context)
                       : isCurrent
-                          ? _stateColor.withValues(alpha: 0.3)
-                          : Colors.grey.shade300,
+                          ? _stateColor(context).withValues(alpha: 0.3)
+                          : ChirpColors.of(context).border,
                   border: isCurrent
-                      ? Border.all(color: _stateColor, width: 2)
+                      ? Border.all(color: _stateColor(context), width: 2)
                       : null,
                 ),
               ),
@@ -168,7 +170,7 @@ class _PomodoroContent extends StatelessWidget {
         Text(
           'Pomodoro ${status.currentPomodoro} of ${status.totalPomodoros}',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
+            color: ChirpColors.of(context).textSecondary,
           ),
         ),
         const SizedBox(height: 32),
@@ -217,7 +219,7 @@ class _PomodoroContent extends StatelessWidget {
         Text(
           '${status.pomodorosCompletedToday} Pomodoros completed today',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.grey[600],
+            color: ChirpColors.of(context).textSecondary,
           ),
         ),
       ],

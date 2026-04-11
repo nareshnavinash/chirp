@@ -1,21 +1,21 @@
-cask "blink" do
+cask "chirp" do
   version "0.1.0"
   sha256 "" # TODO: fill after build
 
-  url "https://github.com/blinkapp/blink/releases/download/v#{version}/Blink-#{version}-macos.dmg"
-  name "Blink"
+  url "https://github.com/chirpapp/chirp/releases/download/v#{version}/Chirp-#{version}-macos.dmg"
+  name "Chirp"
   desc "Smart break reminders for healthy screen habits"
-  homepage "https://blinkapp.dev"
+  homepage "https://chirpapp.dev"
 
   livecheck do
     url :url
     strategy :github_latest
   end
 
-  app "blink_app.app", target: "Blink.app"
+  app "chirp_app.app", target: "Chirp.app"
 
   zap trash: [
-    "~/Library/Preferences/com.blinkapp.blink.plist",
-    "~/Library/Application Support/com.blinkapp.blink",
+    "~/Library/Preferences/com.chirpapp.chirp.plist",
+    "~/Library/Application Support/com.chirpapp.chirp",
   ]
 end

@@ -1,4 +1,4 @@
-// Blink Break Timer - Background Service Worker
+// Chirp Break Timer - Background Service Worker
 
 const DEFAULT_SETTINGS = {
   workMinutes: 20,
@@ -110,7 +110,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     chrome.notifications.create('blinkNotification', {
       type: 'basic',
       iconUrl: 'icons/icon128.png',
-      title: 'Blink',
+      title: 'Chirp',
       message: 'Remember to blink.',
       priority: 1,
     });

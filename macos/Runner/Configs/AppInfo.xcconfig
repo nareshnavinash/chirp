@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = blink_app
+PRODUCT_NAME = chirp_app
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.blinkapp.blinkApp
+PRODUCT_BUNDLE_IDENTIFIER = com.chirpapp.chirpApp
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.blinkapp. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.chirpapp. All rights reserved.

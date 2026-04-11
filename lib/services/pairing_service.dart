@@ -192,7 +192,7 @@ class PairingService {
       request.response
         ..headers.contentType = ContentType.json
         ..write(jsonEncode({
-          'app': 'Blink',
+          'app': 'Chirp',
           'role': role.name,
           'paired': _isPaired,
         }))

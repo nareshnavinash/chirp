@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432 432" width="432" height="432">
+  <!-- Android Adaptive Icon Foreground: Layered Minimal 3D "C" -->
+
+  <!-- Layer 3 (back, lightest, most offset) -->
+  <path d="M 310 175 A 120 120 0 1 0 310 271"
+        stroke="#E0D4FF" stroke-width="50" stroke-linecap="round" fill="none"
+        transform="translate(6, 6)"/>
+
+  <!-- Layer 2 (middle) -->
+  <path d="M 310 175 A 120 120 0 1 0 310 271"
+        stroke="#B794F6" stroke-width="50" stroke-linecap="round" fill="none"
+        transform="translate(3, 3)"/>
+
+  <!-- Layer 1 (front, darkest) -->
+  <path d="M 310 175 A 120 120 0 1 0 310 271"
+        stroke="#7C3AED" stroke-width="50" stroke-linecap="round" fill="none"/>
+</svg>

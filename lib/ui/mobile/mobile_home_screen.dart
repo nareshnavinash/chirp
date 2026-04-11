@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:blink/core/app_constants.dart';
-import 'package:blink/core/providers.dart';
-import 'package:blink/services/timer_service.dart';
-import 'package:blink/ui/mobile/mobile_pairing_screen.dart';
-import 'package:blink/ui/pomodoro_screen.dart';
-import 'package:blink/ui/stats_screen.dart';
-import 'package:blink/ui/settings_screen.dart';
+import 'package:chirp/core/app_constants.dart';
+import 'package:chirp/core/providers.dart';
+import 'package:chirp/services/timer_service.dart';
+import 'package:chirp/ui/mobile/mobile_pairing_screen.dart';
+import 'package:chirp/ui/pomodoro_screen.dart';
+import 'package:chirp/ui/stats_screen.dart';
+import 'package:chirp/ui/settings_screen.dart';
+import 'package:chirp/ui/theme/app_theme_extension.dart';
 
 class MobileHomeScreen extends ConsumerStatefulWidget {
   const MobileHomeScreen({super.key});
@@ -76,7 +77,7 @@ class _MobileTimerTab extends ConsumerWidget {
             // Header
             Row(
               children: [
-                const Icon(Icons.remove_red_eye, size: 28, color: Colors.blue),
+                Icon(Icons.remove_red_eye, size: 28, color: ChirpColors.of(context).brand),
                 const SizedBox(width: 10),
                 Text(
                   AppConstants.appName,
@@ -115,15 +116,15 @@ class _MobileTimerTab extends ConsumerWidget {
                 status.stateLabel,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: status.state == TimerState.onBreak
-                      ? Colors.green
+                      ? ChirpColors.of(context).success
                       : status.state == TimerState.preBreak
-                          ? Colors.orange
-                          : Colors.grey[600],
+                          ? ChirpColors.of(context).warning
+                          : ChirpColors.of(context).textSecondary,
                 ),
               ),
               loading: () => Text(
                 'Starting...',
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(color: ChirpColors.of(context).textSecondary),
               ),
               error: (e, st) => const SizedBox.shrink(),
             ),
@@ -224,7 +225,8 @@ class _MobileTimerCircle extends StatelessWidget {
     final progress = status?.progress ?? 0.0;
     final timeText = status?.remainingFormatted ?? '--:--';
     final isBreak = status?.state == TimerState.onBreak;
-    final color = isBreak ? Colors.green : Colors.blue;
+    final colors = ChirpColors.of(context);
+    final color = isBreak ? colors.success : colors.brand;
 
     return SizedBox(
       width: 220,
@@ -238,7 +240,7 @@ class _MobileTimerCircle extends StatelessWidget {
             child: CircularProgressIndicator(
               value: progress,
               strokeWidth: 8,
-              backgroundColor: Colors.grey.shade200,
+              backgroundColor: colors.surfaceSubtle,
               color: color,
             ),
           ),

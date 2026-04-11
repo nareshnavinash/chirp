@@ -1,5 +1,7 @@
+import 'dart:io';
+
 import 'package:launch_at_startup/launch_at_startup.dart';
-import 'package:blink/core/app_constants.dart';
+import 'package:chirp/core/app_constants.dart';
 
 class AutostartService {
   Future<void> init() async {
@@ -10,11 +12,7 @@ class AutostartService {
   }
 
   String _getAppPath() {
-    // Platform.resolvedExecutable gives the path to the running executable
-    return const String.fromEnvironment(
-      'APP_PATH',
-      defaultValue: '',
-    );
+    return Platform.resolvedExecutable;
   }
 
   Future<bool> isEnabled() async {

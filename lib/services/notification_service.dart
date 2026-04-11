@@ -1,9 +1,9 @@
 import 'package:local_notifier/local_notifier.dart';
-import 'package:blink/services/timer_service.dart';
+import 'package:chirp/services/timer_service.dart';
 
 class NotificationService {
   Future<void> init() async {
-    await localNotifier.setup(appName: 'Blink');
+    await localNotifier.setup(appName: 'Chirp');
   }
 
   void showPreBreakNotification({

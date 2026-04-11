@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:blink/core/providers.dart';
-import 'package:blink/services/stats_service.dart';
+import 'package:chirp/core/providers.dart';
+import 'package:chirp/services/stats_service.dart';
+import 'package:chirp/ui/theme/app_theme_extension.dart';
 
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
@@ -11,6 +12,8 @@ class StatsScreen extends ConsumerWidget {
     final statsService = ref.watch(statsServiceProvider);
     final today = statsService.getToday();
     final week = statsService.getWeek();
+    final currentStreak = statsService.getCurrentStreak();
+    final longestStreak = statsService.getLongestStreak();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Stats')),
@@ -19,6 +22,8 @@ class StatsScreen extends ConsumerWidget {
         children: [
           // Health Score
           _HealthScoreCard(score: today.healthScore),
+          const SizedBox(height: 16),
+          _StreakCard(currentStreak: currentStreak, longestStreak: longestStreak),
           const SizedBox(height: 16),
 
           // Today's stats
@@ -30,21 +35,21 @@ class StatsScreen extends ConsumerWidget {
                 icon: Icons.check_circle_outline,
                 label: 'Breaks Taken',
                 value: '${today.breaksTaken}',
-                color: Colors.green,
+                color: ChirpColors.of(context).success,
               )),
               const SizedBox(width: 8),
               Expanded(child: _StatCard(
                 icon: Icons.cancel_outlined,
                 label: 'Skipped',
                 value: '${today.breaksSkipped}',
-                color: Colors.red,
+                color: ChirpColors.of(context).error,
               )),
               const SizedBox(width: 8),
               Expanded(child: _StatCard(
                 icon: Icons.snooze,
                 label: 'Postponed',
                 value: '${today.breaksPostponed}',
-                color: Colors.orange,
+                color: ChirpColors.of(context).warning,
               )),
             ],
           ),
@@ -55,21 +60,21 @@ class StatsScreen extends ConsumerWidget {
                 icon: Icons.timer,
                 label: 'Screen Time',
                 value: _formatMinutes(today.totalScreenMinutes),
-                color: Colors.blue,
+                color: ChirpColors.of(context).brand,
               )),
               const SizedBox(width: 8),
               Expanded(child: _StatCard(
                 icon: Icons.trending_up,
                 label: 'Longest Session',
                 value: _formatMinutes(today.longestSessionMinutes),
-                color: Colors.purple,
+                color: ChirpColors.of(context).statsPurple,
               )),
               const SizedBox(width: 8),
               Expanded(child: _StatCard(
                 icon: Icons.analytics_outlined,
                 label: 'Median Session',
                 value: _formatMinutes(today.medianSessionMinutes),
-                color: Colors.teal,
+                color: ChirpColors.of(context).statsTeal,
               )),
             ],
           ),
@@ -97,10 +102,11 @@ class _HealthScoreCard extends StatelessWidget {
 
   const _HealthScoreCard({required this.score});
 
-  Color get _scoreColor {
-    if (score >= 80) return Colors.green;
-    if (score >= 60) return Colors.orange;
-    return Colors.red;
+  Color _scoreColor(BuildContext context) {
+    final colors = ChirpColors.of(context);
+    if (score >= 80) return colors.success;
+    if (score >= 60) return colors.warning;
+    return colors.error;
   }
 
   String get _scoreLabel {
@@ -129,15 +135,15 @@ class _HealthScoreCard extends StatelessWidget {
                     child: CircularProgressIndicator(
                       value: score / 100,
                       strokeWidth: 6,
-                      backgroundColor: Colors.grey.shade200,
-                      color: _scoreColor,
+                      backgroundColor: ChirpColors.of(context).surfaceSubtle,
+                      color: _scoreColor(context),
                     ),
                   ),
                   Text(
                     '$score',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: _scoreColor,
+                      color: _scoreColor(context),
                     ),
                   ),
                 ],
@@ -155,11 +161,82 @@ class _HealthScoreCard extends StatelessWidget {
                 Text(
                   _scoreLabel,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: _scoreColor,
+                    color: _scoreColor(context),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StreakCard extends StatelessWidget {
+  final int currentStreak;
+  final int longestStreak;
+
+  const _StreakCard({required this.currentStreak, required this.longestStreak});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  Icon(Icons.local_fire_department,
+                      color: currentStreak > 0 ? ChirpColors.of(context).warning : ChirpColors.of(context).textTertiary,
+                      size: 28),
+                  const SizedBox(height: 8),
+                  Text(
+                    '$currentStreak',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${currentStreak == 1 ? 'Day' : 'Days'} Streak',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: ChirpColors.of(context).textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 48,
+              color: ChirpColors.of(context).border,
+            ),
+            Expanded(
+              child: Column(
+                children: [
+                  Icon(Icons.emoji_events,
+                      color: longestStreak > 0 ? ChirpColors.of(context).statsAmber : ChirpColors.of(context).textTertiary,
+                      size: 28),
+                  const SizedBox(height: 8),
+                  Text(
+                    '$longestStreak',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Best Streak',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: ChirpColors.of(context).textSecondary,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -200,7 +277,7 @@ class _StatCard extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+                color: ChirpColors.of(context).textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -234,9 +311,10 @@ class _WeeklyChart extends StatelessWidget {
               .subtract(Duration(days: 6 - i))
               .weekday;
           final isToday = i == 6;
-          final barHeight = barMax > 0
-              ? (stats.breaksTaken / barMax) * 120
+          final rawHeight = barMax > 0
+              ? (stats.breaksTaken / barMax) * 100
               : 0.0;
+          final barHeight = stats.breaksTaken > 0 ? rawHeight.clamp(4.0, 100.0) : 0.0;
 
           return Expanded(
             child: Column(
@@ -247,13 +325,15 @@ class _WeeklyChart extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 4),
-                Container(
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCubic,
                   height: barHeight,
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     color: isToday
-                        ? Colors.blue
-                        : Colors.blue.withValues(alpha: 0.3),
+                        ? ChirpColors.of(context).brand
+                        : ChirpColors.of(context).brand.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),

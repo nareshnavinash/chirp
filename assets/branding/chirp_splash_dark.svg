@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480">
+  <!-- Splash screen motif: light violet layered C on transparent (dark mode) -->
+
+  <!-- Layer 3 (back, darkest, most offset) -->
+  <path d="M 329 188 A 130 130 0 1 0 329 292"
+        stroke="#4C1D95" stroke-width="55" stroke-linecap="round" fill="none"
+        transform="translate(7, 7)"/>
+
+  <!-- Layer 2 (middle) -->
+  <path d="M 329 188 A 130 130 0 1 0 329 292"
+        stroke="#7C3AED" stroke-width="55" stroke-linecap="round" fill="none"
+        transform="translate(3.5, 3.5)"/>
+
+  <!-- Layer 1 (front, lightest) -->
+  <path d="M 329 188 A 130 130 0 1 0 329 292"
+        stroke="#E9D5FF" stroke-width="55" stroke-linecap="round" fill="none"/>
+</svg>

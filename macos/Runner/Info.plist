@@ -28,5 +28,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Chirp checks if your camera is in use to detect meetings and automatically pause break reminders.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Chirp checks if your microphone is in use to detect meetings and automatically pause break reminders.</string>
 </dict>
 </plist>

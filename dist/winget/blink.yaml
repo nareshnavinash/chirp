@@ -1,7 +1,7 @@
-PackageIdentifier: BlinkApp.Blink
+PackageIdentifier: ChirpApp.Chirp
 PackageVersion: 0.1.0
-PackageName: Blink
-Publisher: BlinkApp
+PackageName: Chirp
+Publisher: ChirpApp
 License: MIT
 ShortDescription: Smart break reminders for healthy screen habits
 Description: |-
@@ -14,11 +14,11 @@ Tags:
   - pomodoro
   - health
   - productivity
-PackageUrl: https://blinkapp.dev
+PackageUrl: https://chirpapp.dev
 Installers:
   - Architecture: x64
     InstallerType: zip
-    InstallerUrl: https://github.com/blinkapp/blink/releases/download/v0.1.0/Blink-0.1.0-windows.zip
+    InstallerUrl: https://github.com/chirpapp/chirp/releases/download/v0.1.0/Chirp-0.1.0-windows.zip
     InstallerSha256: ""  # TODO: fill after build
 ManifestType: singleton
 ManifestVersion: 1.4.0

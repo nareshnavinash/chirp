@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:blink/core/providers.dart';
+import 'package:chirp/core/providers.dart';
+import 'package:chirp/ui/theme/app_theme_extension.dart';
 
 class MobilePairingScreen extends ConsumerStatefulWidget {
   const MobilePairingScreen({super.key});
@@ -64,9 +65,9 @@ class _MobilePairingScreenState extends ConsumerState<MobilePairingScreen> {
           children: [
             if (service.isPaired) ...[
               Card(
-                color: Colors.green.shade50,
+                color: ChirpColors.of(context).successLight,
                 child: ListTile(
-                  leading: const Icon(Icons.check_circle, color: Colors.green),
+                  leading: Icon(Icons.check_circle, color: ChirpColors.of(context).success),
                   title: const Text('Connected to desktop'),
                   trailing: TextButton(
                     onPressed: () async {
@@ -84,10 +85,10 @@ class _MobilePairingScreenState extends ConsumerState<MobilePairingScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Open Blink on your desktop and go to Settings > Pairing '
+                'Open Chirp on your desktop and go to Settings > Pairing '
                 'to find your IP address, port, and pairing code.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
+                  color: ChirpColors.of(context).textSecondary,
                 ),
               ),
               const SizedBox(height: 24),
@@ -125,7 +126,7 @@ class _MobilePairingScreenState extends ConsumerState<MobilePairingScreen> {
                 const SizedBox(height: 8),
                 Text(
                   _error!,
-                  style: TextStyle(color: Colors.red.shade700),
+                  style: TextStyle(color: ChirpColors.of(context).errorDark),
                 ),
               ],
               const SizedBox(height: 16),

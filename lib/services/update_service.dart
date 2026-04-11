@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:blink/core/app_constants.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:chirp/core/app_constants.dart';
 
 class AppUpdate {
   final String version;
@@ -24,7 +25,7 @@ class AppUpdate {
 }
 
 class UpdateService {
-  static const _checkUrl = 'https://api.github.com/repos/blinkapp/blink/releases/latest';
+  static const _checkUrl = 'https://api.github.com/repos/chirpapp/chirp/releases/latest';
 
   Future<AppUpdate?> checkForUpdate() async {
     try {
@@ -40,7 +41,7 @@ class UpdateService {
       final data = jsonDecode(body) as Map<String, dynamic>;
       final latestVersion = (data['tag_name'] as String).replaceFirst('v', '');
 
-      if (_isNewer(latestVersion, AppConstants.appVersion)) {
+      if (isNewer(latestVersion, AppConstants.appVersion)) {
         // Find the right asset for this platform
         final assets = data['assets'] as List<dynamic>? ?? [];
         final downloadUrl = _findAssetUrl(assets);
@@ -77,7 +78,8 @@ class UpdateService {
     return null;
   }
 
-  bool _isNewer(String remote, String local) {
+  @visibleForTesting
+  static bool isNewer(String remote, String local) {
     final remoteParts = remote.split('.').map(int.tryParse).toList();
     final localParts = local.split('.').map(int.tryParse).toList();
 

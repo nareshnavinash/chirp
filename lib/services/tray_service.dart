@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'package:flutter/scheduler.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:blink/services/timer_service.dart';
+import 'package:chirp/services/timer_service.dart';
 
 class TrayService {
   final SystemTray _systemTray = SystemTray();
@@ -12,9 +13,9 @@ class TrayService {
 
   Future<void> init() async {
     await _systemTray.initSystemTray(
-      title: 'Blink',
+      title: 'Chirp',
       iconPath: _getTrayIconPath(),
-      toolTip: 'Blink - Starting...',
+      toolTip: 'Chirp - Starting...',
     );
 
     await _updateMenu();
@@ -35,24 +36,28 @@ class TrayService {
   }
 
   String _getTrayIconPath() {
-    return 'assets/icons/tray_icon.png';
+    final brightness =
+        SchedulerBinding.instance.platformDispatcher.platformBrightness;
+    return brightness == Brightness.dark
+        ? 'assets/icons/tray_icon_dark.png'
+        : 'assets/icons/tray_icon.png';
   }
 
   void _updateTooltipFromStatus(TimerStatus status) {
     String tooltip;
     switch (status.state) {
       case TimerState.working:
-        tooltip = 'Blink - Next break in ${status.remainingFormatted}';
+        tooltip = 'Chirp - Next break in ${status.remainingFormatted}';
       case TimerState.preBreak:
-        tooltip = 'Blink - Break starting in ${status.remainingFormatted}';
+        tooltip = 'Chirp - Break starting in ${status.remainingFormatted}';
       case TimerState.onBreak:
         final type =
             status.nextBreakType == BreakType.long ? 'Long break' : 'Break';
-        tooltip = 'Blink - $type ${status.remainingFormatted}';
+        tooltip = 'Chirp - $type ${status.remainingFormatted}';
       case TimerState.paused:
-        tooltip = 'Blink - Paused';
+        tooltip = 'Chirp - Paused';
       case TimerState.idle:
-        tooltip = 'Blink - Idle';
+        tooltip = 'Chirp - Idle';
     }
     _systemTray.setToolTip(tooltip);
   }
@@ -61,20 +66,13 @@ class TrayService {
     final menu = Menu();
     final items = <MenuItemBase>[
       MenuItemLabel(
-        label: timerInfo ?? 'Blink',
+        label: timerInfo ?? 'Chirp',
         onClicked: (menuItem) async {
           await windowManager.show();
           await windowManager.focus();
         },
       ),
       MenuSeparator(),
-      MenuItemLabel(
-        label: 'Open Blink',
-        onClicked: (menuItem) async {
-          await windowManager.show();
-          await windowManager.focus();
-        },
-      ),
       MenuItemLabel(
         label: 'Start Break Now',
         onClicked: (menuItem) {
@@ -92,7 +90,7 @@ class TrayService {
       ),
       MenuSeparator(),
       MenuItemLabel(
-        label: 'Quit Blink',
+        label: 'Quit Chirp',
         onClicked: (menuItem) async {
           await _systemTray.destroy();
           await windowManager.destroy();

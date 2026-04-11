@@ -1,4 +1,4 @@
-name: blink
+name: chirp
 version: '0.1.0'
 summary: Smart break reminders for healthy screen habits
 description: |
@@ -11,7 +11,7 @@ confinement: strict
 grade: stable
 
 parts:
-  blink:
+  chirp:
     plugin: nil
     source: .
     build-packages:
@@ -27,8 +27,8 @@ parts:
       cp -r build/linux/x64/release/bundle/* $SNAPCRAFT_PART_INSTALL/
 
 apps:
-  blink:
-    command: blink
+  chirp:
+    command: chirp
     extensions: [gnome]
     plugs:
       - desktop

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Blink - Break Reminders",
+  "name": "Chirp - Break Reminders",
   "version": "0.1.0",
   "description": "Smart break reminders for healthy screen habits. Based on the 20-20-20 rule.",
   "permissions": [

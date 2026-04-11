@@ -3,23 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:blink/core/providers.dart';
-import 'package:blink/services/notification_service.dart';
-import 'package:blink/services/mobile_notification_service.dart';
-import 'package:blink/services/storage_service.dart';
-import 'package:blink/services/timer_service.dart';
-import 'package:blink/services/reminder_service.dart';
-import 'package:blink/services/idle_service.dart';
-import 'package:blink/services/schedule_service.dart';
-import 'package:blink/services/smart_pause_service.dart';
-import 'package:blink/services/stats_service.dart';
-import 'package:blink/services/pairing_service.dart';
-import 'package:blink/services/sync_service.dart';
-import 'package:blink/services/team_service.dart';
-import 'package:blink/services/tray_service.dart';
-import 'package:blink/ui/break_screen.dart';
-import 'package:blink/ui/home_screen.dart';
-import 'package:blink/ui/mobile/mobile_home_screen.dart';
+import 'package:chirp/core/providers.dart';
+import 'package:chirp/services/notification_service.dart';
+import 'package:chirp/services/mobile_notification_service.dart';
+import 'package:chirp/services/storage_service.dart';
+import 'package:chirp/services/timer_service.dart';
+import 'package:chirp/services/reminder_service.dart';
+import 'package:chirp/services/idle_service.dart';
+import 'package:chirp/services/schedule_service.dart';
+import 'package:chirp/services/smart_pause_service.dart';
+import 'package:chirp/services/stats_service.dart';
+import 'package:chirp/services/pairing_service.dart';
+import 'package:chirp/services/sync_service.dart';
+import 'package:chirp/services/team_service.dart';
+import 'package:chirp/services/tray_service.dart';
+import 'package:chirp/ui/break_screen.dart';
+import 'package:chirp/ui/home_screen.dart';
+import 'package:chirp/ui/mobile/mobile_home_screen.dart';
+import 'package:chirp/ui/theme/app_theme.dart';
 
 late final TimerService timerService;
 late final ReminderService reminderService;
@@ -73,7 +74,7 @@ Future<void> main() async {
       size: const Size(480, 640),
       minimumSize: const Size(400, 500),
       center: true,
-      title: 'Blink',
+      title: 'Chirp',
       skipTaskbar: false,
       titleBarStyle: TitleBarStyle.normal,
     );
@@ -233,19 +234,19 @@ Future<void> main() async {
         if (pairingService != null)
           pairingServiceProvider.overrideWithValue(pairingService!),
       ],
-      child: const BlinkApp(),
+      child: const ChirpApp(),
     ),
   );
 }
 
-class BlinkApp extends ConsumerStatefulWidget {
-  const BlinkApp({super.key});
+class ChirpApp extends ConsumerStatefulWidget {
+  const ChirpApp({super.key});
 
   @override
-  ConsumerState<BlinkApp> createState() => _BlinkAppState();
+  ConsumerState<ChirpApp> createState() => _ChirpAppState();
 }
 
-class _BlinkAppState extends ConsumerState<BlinkApp> with WindowListener {
+class _ChirpAppState extends ConsumerState<ChirpApp> with WindowListener {
   final _navigatorKey = GlobalKey<NavigatorState>();
   bool _isBreakScreenShowing = false;
 
@@ -294,9 +295,19 @@ class _BlinkAppState extends ConsumerState<BlinkApp> with WindowListener {
           pageBuilder: (context, animation, secondaryAnimation) =>
               const BreakScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
+            final curved = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            );
+            return FadeTransition(
+              opacity: curved,
+              child: ScaleTransition(
+                scale: Tween(begin: 0.95, end: 1.0).animate(curved),
+                child: child,
+              ),
+            );
           },
-          transitionDuration: const Duration(milliseconds: 300),
+          transitionDuration: const Duration(milliseconds: 400),
         ),
       );
     } else if (status.state != TimerState.onBreak && _isBreakScreenShowing) {
@@ -312,19 +323,11 @@ class _BlinkAppState extends ConsumerState<BlinkApp> with WindowListener {
     });
 
     return MaterialApp(
-      title: 'Blink',
+      title: 'Chirp',
       debugShowCheckedModeBanner: false,
       navigatorKey: _navigatorKey,
-      theme: ThemeData(
-        colorSchemeSeed: Colors.blue,
-        useMaterial3: true,
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: Colors.blue,
-        useMaterial3: true,
-        brightness: Brightness.dark,
-      ),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
       home: _isMobile ? const MobileHomeScreen() : const HomeScreen(),
     );

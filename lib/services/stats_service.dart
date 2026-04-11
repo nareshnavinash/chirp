@@ -132,4 +132,46 @@ class StatsService {
       return _load(_dateKey(date));
     });
   }
+
+  int getCurrentStreak() {
+    var streak = 0;
+    var date = DateTime.now();
+
+    // Check today first — if today has no activity yet, start from yesterday
+    final today = _load(_dateKey(date));
+    if (today.breaksTaken == 0 && today.breaksSkipped == 0) {
+      date = date.subtract(const Duration(days: 1));
+    }
+
+    // Count consecutive days with breaks taken and none skipped
+    for (var i = 0; i < 365; i++) {
+      final stats = _load(_dateKey(date));
+      if (stats.breaksTaken > 0 && stats.breaksSkipped == 0) {
+        streak++;
+        date = date.subtract(const Duration(days: 1));
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  int getLongestStreak() {
+    var longest = 0;
+    var current = 0;
+    final now = DateTime.now();
+
+    // Check last 90 days
+    for (var i = 89; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+      final stats = _load(_dateKey(date));
+      if (stats.breaksTaken > 0 && stats.breaksSkipped == 0) {
+        current++;
+        if (current > longest) longest = current;
+      } else {
+        current = 0;
+      }
+    }
+    return longest;
+  }
 }
