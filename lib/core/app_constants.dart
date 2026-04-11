@@ -1,6 +1,6 @@
 class AppConstants {
   static const String appName = 'Chirp';
-  static const String appVersion = '0.1.0';
+  static const String appVersion = '0.2.0';
 
   // Default break settings
   static const int defaultWorkMinutes = 20;

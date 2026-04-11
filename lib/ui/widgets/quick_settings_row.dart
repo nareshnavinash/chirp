@@ -15,6 +15,7 @@ class QuickSettingsRow extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         FilterChip(
+          showCheckmark: false,
           avatar: const Icon(Icons.timer_outlined, size: 16),
           label: const Text('Breaks'),
           selected: settings.breaksEnabled,
@@ -31,6 +32,7 @@ class QuickSettingsRow extends ConsumerWidget {
         ),
         const SizedBox(width: 8),
         FilterChip(
+          showCheckmark: false,
           avatar: const Icon(Icons.visibility_outlined, size: 16),
           label: const Text('Blink'),
           selected: settings.blinkRemindersEnabled,
@@ -43,6 +45,7 @@ class QuickSettingsRow extends ConsumerWidget {
         ),
         const SizedBox(width: 8),
         FilterChip(
+          showCheckmark: false,
           avatar: const Icon(Icons.accessibility_new, size: 16),
           label: const Text('Posture'),
           selected: settings.postureRemindersEnabled,

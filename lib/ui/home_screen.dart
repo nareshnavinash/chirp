@@ -6,7 +6,6 @@ import 'package:chirp/services/timer_service.dart';
 import 'package:chirp/ui/settings_screen.dart';
 import 'package:chirp/ui/pomodoro_screen.dart';
 import 'package:chirp/ui/stats_screen.dart';
-import 'package:chirp/ui/team_screen.dart';
 import 'package:chirp/ui/theme/app_theme_extension.dart';
 import 'package:chirp/ui/widgets/circular_timer.dart';
 import 'package:chirp/ui/widgets/keyboard_shortcuts.dart';
@@ -76,17 +75,6 @@ class HomeScreen extends ConsumerWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const StatsScreen(),
-                      ),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.people),
-                  tooltip: 'Team',
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const TeamScreen(),
                       ),
                     );
                   },
@@ -169,15 +157,26 @@ class HomeScreen extends ConsumerWidget {
 
             const Spacer(),
 
-            // Keyboard shortcut hints
+            // Keyboard shortcut hints (contextual)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                'Space to ${appStatus == AppStatus.running ? "pause" : "resume"} · B for break · S to skip',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: ChirpColors.of(context).textTertiary,
-                  fontSize: 11,
-                ),
+              child: timerAsync.when(
+                data: (status) {
+                  final hint = switch (status.state) {
+                    TimerState.onBreak => 'S to skip · Esc to dismiss',
+                    TimerState.paused => 'Space to resume',
+                    _ => 'Space to ${appStatus == AppStatus.running ? "pause" : "resume"} · B for break',
+                  };
+                  return Text(
+                    hint,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: ChirpColors.of(context).textTertiary,
+                      fontSize: 11,
+                    ),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (e, st) => const SizedBox.shrink(),
               ),
             ),
             const SizedBox(height: 12),

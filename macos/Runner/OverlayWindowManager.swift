@@ -6,6 +6,7 @@ class OverlayWindowManager: NSObject {
     private var overlayWindows: [NSWindow] = []
     private var savedMainWindowLevel: NSWindow.Level = .normal
     private var savedMainWindowCollectionBehavior: NSWindow.CollectionBehavior = []
+    private var savedFrontmostApp: NSRunningApplication?
 
     func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
@@ -26,6 +27,9 @@ class OverlayWindowManager: NSObject {
 
     private func showOverlays(result: FlutterResult) {
         hideOverlaysInternal()
+
+        // Save the currently active app so we can restore focus after the break
+        savedFrontmostApp = NSWorkspace.shared.frontmostApplication
 
         let screens = NSScreen.screens
         guard let primaryScreen = screens.first else {
@@ -73,6 +77,12 @@ class OverlayWindowManager: NSObject {
         if let mainWindow = NSApp.windows.first(where: { $0 is MainFlutterWindow }) {
             mainWindow.level = savedMainWindowLevel
             mainWindow.collectionBehavior = savedMainWindowCollectionBehavior
+        }
+
+        // Restore focus to the app that was active before the break
+        if let previousApp = savedFrontmostApp {
+            previousApp.activate(options: [])
+            savedFrontmostApp = nil
         }
 
         result(nil)

@@ -16,10 +16,13 @@ import 'package:chirp/services/stats_service.dart';
 import 'package:chirp/services/pairing_service.dart';
 import 'package:chirp/services/sync_service.dart';
 import 'package:chirp/services/team_service.dart';
+import 'package:chirp/services/pomodoro_service.dart';
 import 'package:chirp/services/tray_service.dart';
 import 'package:chirp/services/overlay_service.dart';
 import 'package:chirp/ui/break_screen.dart';
 import 'package:chirp/ui/home_screen.dart';
+import 'package:chirp/ui/settings_screen.dart';
+import 'package:chirp/ui/stats_screen.dart';
 import 'package:chirp/ui/mobile/mobile_home_screen.dart';
 import 'package:chirp/ui/theme/app_theme.dart';
 
@@ -31,6 +34,7 @@ late final TeamService teamService;
 late final SmartPauseService smartPauseService;
 late final IdleService idleService;
 late final ScheduleService scheduleService;
+late final PomodoroService pomodoroService;
 
 // Desktop-only globals
 TrayService? trayService;
@@ -169,6 +173,10 @@ Future<void> main() async {
     postureEnabled: settings.postureRemindersEnabled,
   );
 
+  // Initialize pomodoro service
+  pomodoroService = PomodoroService();
+  pomodoroService.configure();
+
   // Desktop-only services
   if (_isDesktop) {
     idleService = IdleService();
@@ -212,6 +220,7 @@ Future<void> main() async {
     trayService = TrayService();
     await trayService!.init();
     trayService!.listenToTimer(timerService);
+    trayService!.listenToPomodoro(pomodoroService);
   } else {
     // Provide defaults for mobile so providers don't crash
     idleService = IdleService();
@@ -237,6 +246,7 @@ Future<void> main() async {
         smartPauseServiceProvider.overrideWithValue(smartPauseService),
         syncServiceProvider.overrideWithValue(syncService),
         teamServiceProvider.overrideWithValue(teamService),
+        pomodoroServiceProvider.overrideWithValue(pomodoroService),
         if (pairingService != null)
           pairingServiceProvider.overrideWithValue(pairingService!),
       ],
@@ -268,6 +278,45 @@ class _ChirpAppState extends ConsumerState<ChirpApp> with WindowListener {
       });
       trayService?.setOnStartBreakNow(() {
         ref.read(timerServiceProvider).startBreakNow();
+      });
+      trayService?.setOnSkipBreak(() {
+        ref.read(timerServiceProvider).skipBreak();
+      });
+      trayService?.setOnPostpone((minutes) {
+        ref.read(timerServiceProvider).postpone(minutes);
+      });
+      trayService?.setOnOpenApp(() async {
+        await windowManager.show();
+        await windowManager.focus();
+      });
+      trayService?.setOnOpenSettings(() async {
+        await windowManager.show();
+        await windowManager.focus();
+        _navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+        );
+      });
+      trayService?.setOnOpenStats(() async {
+        await windowManager.show();
+        await windowManager.focus();
+        _navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (_) => const StatsScreen()),
+        );
+      });
+      trayService?.setOnPomodoroStart(() {
+        ref.read(pomodoroServiceProvider).startWork();
+      });
+      trayService?.setOnPomodoroTogglePause(() {
+        final pomo = ref.read(pomodoroServiceProvider);
+        final status = pomo.currentStatus;
+        if (status.state == PomodoroState.paused) {
+          pomo.resume();
+        } else {
+          pomo.pause();
+        }
+      });
+      trayService?.setOnPomodoroSkipBreak(() {
+        ref.read(pomodoroServiceProvider).skipBreak();
       });
     }
   }
@@ -343,6 +392,8 @@ class _ChirpAppState extends ConsumerState<ChirpApp> with WindowListener {
 
       if (Platform.isMacOS && overlayService != null) {
         overlayService!.hideBreakOverlay();
+      } else if (_isDesktop) {
+        windowManager.hide();
       }
     }
   }
